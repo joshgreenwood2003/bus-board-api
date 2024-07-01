@@ -17,18 +17,25 @@ const app = (0, express_1.default)();
 const port = 3000;
 app.get('/', (req, res) => {
     res.send('Hello World!');
-    fetchWithAwait();
 });
 app.listen(port, () => {
     return console.log(`Express is listening at http://localhost:${port}`);
 });
-function fetchWithAwait() {
+app.get('/postcode', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.send(yield busStopFromPostCode(req.query.postcode));
+}));
+function busStopFromPostCode(postcode) {
     return __awaiter(this, void 0, void 0, function* () {
-        const response = yield fetch("https://api.tfl.gov.uk/StopPoint/Mode/bus/Disruption");
-        const data = yield response.json();
-        // deal with JSON response
-        console.log(data);
+        const latLongRes = yield fetch("https://api.postcodes.io/postcodes/" + postcode);
+        const latLongData = yield latLongRes.json();
+        const long = latLongData.result.longitude;
+        const lat = latLongData.result.latitude;
+        //console.log(long);
+        //console.log(lat)
+        const stopRes = yield fetch("https://api.tfl.gov.uk/StopPoint/?lat=" + lat + "&lon=" + long + "&stopTypes=NaptanPublicBusCoachTram&radius=300");
+        const stopData = yield stopRes.json();
+        //console.log(stopData);
+        return stopData;
     });
 }
-fetchWithAwait();
 //# sourceMappingURL=app.js.map

@@ -4,7 +4,6 @@ const port = 3000;
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
-  fetchWithAwait();
 });
 
 app.listen(port, () => {
@@ -12,17 +11,24 @@ app.listen(port, () => {
 });
 
 
+app.get('/postcode', async (req,res)=>{
+    res.send(await busStopFromPostCode(req.query.postcode));
+})
 
 
 
 
 
 
-
-async function fetchWithAwait(): Promise<void> {
-    const response = await fetch("https://api.tfl.gov.uk/StopPoint/Mode/bus/Disruption");
-    const data = await response.json();
-    // deal with JSON response
-    console.log(data);
+async function busStopFromPostCode(postcode): Promise<void> { 
+    const latLongRes = await fetch("https://api.postcodes.io/postcodes/"+postcode);
+    const latLongData = await latLongRes.json();
+    const long = latLongData.result.longitude;
+    const lat = latLongData.result.latitude;
+    //console.log(long);
+    //console.log(lat)
+    const stopRes = await fetch("https://api.tfl.gov.uk/StopPoint/?lat="+lat+"&lon="+long+"&stopTypes=NaptanPublicBusCoachTram&radius=300");
+    const stopData = await stopRes.json()
+    //console.log(stopData);
+    return stopData
   }
-  fetchWithAwait();
